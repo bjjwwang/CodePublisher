@@ -1,0 +1,198 @@
+<!--Logger.h.html:Cpp11-BlockingQueue.cpp.html:-->
+
+<html><script src="jstemplate.js"></script><link rel = "stylesheet" href="csstemplate.css"><h3>Logger.cpp</h3><hr/><div class = "indent"><h4>Dependencies:</h4><br/><a href = "Logger.h.html">Logger.h</a><hr/><a href = "Cpp11-BlockingQueue.cpp.html">Cpp11-BlockingQueue.cpp</a><hr/></div><hr/><pre>
+/////////////////////////////////////////////////////////////////////
+// Logger.cpp - log text messages to std::ostream                  //
+// ver 1.2                                                         //
+//-----------------------------------------------------------------//
+// Jim Fawcett (c) copyright 2015                                  //
+// All rights granted provided this copyright notice is retained   //
+//-----------------------------------------------------------------//
+// Language:    C++, Visual Studio 2015                            //
+// Application: Several Projects, CSE687 - Object Oriented Design  //
+// Author:      Jim Fawcett, Syracuse University, CST 4-187        //
+//              jfawcett@twcny.rr.com                              //
+/////////////////////////////////////////////////////////////////////
+
+#include &lt;functional&gt;
+#include &lt;fstream&gt;
+#include &lt;windows.h&gt;
+#include "Logger.h"
+#include "Utilities.h"
+
+using namespace Logging;
+
+//----&lt; send text message to std::ostream &gt;--------------------------
+
+void Logger::write(const std::string& msg)
+<span onclick = 'show(this, "box0", "hide0")' style = 'background:pink'>-</span>{<div id = 'hide0' style = 'display:none'>...}</div><div id = 'box0' style = 'display:node'>
+	if (_ThreadRunning)
+		_queue.enQ(msg);
+}</div>
+void Logger::title(const std::string& msg, char underline)
+<span onclick = 'show(this, "box1", "hide1")' style = 'background:pink'>-</span>{<div id = 'hide1' style = 'display:none'>...}</div><div id = 'box1' style = 'display:node'>
+	std::string temp = "\n  " + msg + "\n " + std::string(msg.size() + 2, underline);
+	write(temp);
+}</div>
+//----&lt; attach logger to existing std::ostream &gt;---------------------
+
+void Logger::attach(std::ostream* pOut)
+<span onclick = 'show(this, "box2", "hide2")' style = 'background:pink'>-</span>{<div id = 'hide2' style = 'display:none'>...}</div><div id = 'box2' style = 'display:node'>
+	streams_.push_back(pOut);
+	//_pOut = pOut; 
+}</div>
+//----&lt; start logging &gt;----------------------------------------------
+/*
+*  log to all the attached streams
+*/
+void Logger::start()
+<span onclick = 'show(this, "box3", "hide3")' style = 'background:pink'>-</span>{<div id = 'hide3' style = 'display:none'>...}</div><div id = 'box3' style = 'display:node'>
+	if (_ThreadRunning)
+		return;
+	_ThreadRunning = true;
+	std::function&lt;void()&gt; tp = [=]() <span onclick = 'show(this, "box4", "hide4")' style = 'background:pink'>-</span>{<div id = 'hide4' style = 'display:none'>...}</div><div id = 'box4' style = 'display:node'>
+		while (true)
+		<span onclick = 'show(this, "box5", "hide5")' style = 'background:pink'>-</span>{<div id = 'hide5' style = 'display:none'>...}</div><div id = 'box5' style = 'display:node'>
+			std::string msg = _queue.deQ();
+			if (msg == "quit")
+			<span onclick = 'show(this, "box6", "hide6")' style = 'background:pink'>-</span>{<div id = 'hide6' style = 'display:none'>...}</div><div id = 'box6' style = 'display:node'>
+				_ThreadRunning = false;
+				break;
+			}</div>
+			for (auto pStrm : streams_)
+			<span onclick = 'show(this, "box7", "hide7")' style = 'background:pink'>-</span>{<div id = 'hide7' style = 'display:none'>...}</div><div id = 'box7' style = 'display:node'>
+				*pStrm &lt;&lt; msg;
+			}</div>
+		}</div>
+	}</div>;
+	_pThr = new std::thread(tp);
+	//thr.detach();
+}</div>
+//----&lt; has logger been started? &gt;-----------------------------------
+
+bool Logger::running()
+<span onclick = 'show(this, "box8", "hide8")' style = 'background:pink'>-</span>{<div id = 'hide8' style = 'display:none'>...}</div><div id = 'box8' style = 'display:node'>
+	return _ThreadRunning;
+}</div>
+//----&lt; suspend logger &gt;---------------------------------------------
+
+void Logger::pause(bool doPause)
+<span onclick = 'show(this, "box9", "hide9")' style = 'background:pink'>-</span>{<div id = 'hide9' style = 'display:none'>...}</div><div id = 'box9' style = 'display:node'>
+	if (doPause)
+	<span onclick = 'show(this, "box10", "hide10")' style = 'background:pink'>-</span>{<div id = 'hide10' style = 'display:none'>...}</div><div id = 'box10' style = 'display:node'>
+		_Paused = true;
+		::SuspendThread(_pThr-&gt;native_handle());
+	}</div>
+	else
+	<span onclick = 'show(this, "box11", "hide11")' style = 'background:pink'>-</span>{<div id = 'hide11' style = 'display:none'>...}</div><div id = 'box11' style = 'display:node'>
+		_Paused = false;
+		::ResumeThread(_pThr-&gt;native_handle());
+	}</div>
+}</div>
+//----&lt; is logger currently paused? &gt;--------------------------------
+
+bool Logger::paused()
+<span onclick = 'show(this, "box12", "hide12")' style = 'background:pink'>-</span>{<div id = 'hide12' style = 'display:none'>...}</div><div id = 'box12' style = 'display:node'>
+	return _Paused;
+}</div>
+//----&lt; wait for logging to empty input queue &gt;----------------------
+
+void Logger::flush()
+<span onclick = 'show(this, "box13", "hide13")' style = 'background:pink'>-</span>{<div id = 'hide13' style = 'display:none'>...}</div><div id = 'box13' style = 'display:node'>
+	if (_ThreadRunning && !_Paused)
+	<span onclick = 'show(this, "box14", "hide14")' style = 'background:pink'>-</span>{<div id = 'hide14' style = 'display:none'>...}</div><div id = 'box14' style = 'display:node'>
+		while (_queue.size() &gt; 0)
+			;
+		for (auto pStream : streams_)
+			pStream-&gt;flush();
+	}</div>
+}</div>
+//----&lt; stop logging &gt;-----------------------------------------------
+
+void Logger::stop(const std::string& msg)
+<span onclick = 'show(this, "box15", "hide15")' style = 'background:pink'>-</span>{<div id = 'hide15' style = 'display:none'>...}</div><div id = 'box15' style = 'display:node'>
+	if (_ThreadRunning)
+	<span onclick = 'show(this, "box16", "hide16")' style = 'background:pink'>-</span>{<div id = 'hide16' style = 'display:none'>...}</div><div id = 'box16' style = 'display:node'>
+		if (msg != "")
+			write(msg);
+		write("quit");    // request thread to stop
+		if (_pThr-&gt;joinable())
+			_pThr-&gt;join();  // wait for queue to empty
+
+		_ThreadRunning = false;
+	}</div>
+}</div>
+//----&lt; wait for logger to finish &gt;----------------------------------
+
+void Logger::wait()
+<span onclick = 'show(this, "box17", "hide17")' style = 'background:pink'>-</span>{<div id = 'hide17' style = 'display:none'>...}</div><div id = 'box17' style = 'display:node'>
+	if (_ThreadRunning && _pThr-&gt;joinable())
+		_pThr-&gt;join();
+}</div>
+//----&lt; stop logging thread &gt;----------------------------------------
+
+Logger::~Logger()
+<span onclick = 'show(this, "box18", "hide18")' style = 'background:pink'>-</span>{<div id = 'hide18' style = 'display:none'>...}</div><div id = 'box18' style = 'display:node'>
+	stop();
+}</div>
+
+struct Cosmetic
+<span onclick = 'show(this, "box19", "hide19")' style = 'background:pink'>-</span>{<div id = 'hide19' style = 'display:none'>...}</div><div id = 'box19' style = 'display:node'>
+	~Cosmetic() <span onclick = 'show(this, "box20", "hide20")' style = 'background:pink'>-</span>{<div id = 'hide20' style = 'display:none'>...}</div><div id = 'box20' style = 'display:node'> std::cout &lt;&lt; "\n\n"; }</div>
+}</div> cosmetic;
+
+#ifdef TEST_LOGGER
+
+using Util = Utilities::StringHelper;
+
+int main()
+<span onclick = 'show(this, "box21", "hide21")' style = 'background:pink'>-</span>{<div id = 'hide21' style = 'display:none'>...}</div><div id = 'box21' style = 'display:node'>
+	//Util::Title("Testing Logger Class");
+	Logger log;
+	log.attach(&std::cout);
+	std::ofstream out("logFile.txt");
+	if (out.good())
+		log.attach(&out);
+	else
+		std::cout &lt;&lt; "\n  couldn't open logFile for writing";
+	log.write("\n  won't get logged - not started yet");
+	log.start();
+	log.title("Testing Logger Class", '=');
+	log.write("\n  one");
+	log.write("\n  two");
+	log.write("\n  fini");
+	log.stop();
+	log.write("\n  won't get logged - stopped");
+	log.start();
+	log.write("\n  starting again");
+	log.write("\n  and stopping again");
+	log.stop("\n  log terminating now");
+	log.wait();
+
+	StaticLogger&lt;1&gt;::attach(&std::cout);
+	StaticLogger&lt;1&gt;::attach(&out);
+	StaticLogger&lt;1&gt;::start();
+	StaticLogger&lt;1&gt;::write("\n");
+	StaticLogger&lt;1&gt;::title("Testing StaticLogger class");
+	StaticLogger&lt;1&gt;::write("\n  static logger at work");
+	Logger& logger = StaticLogger&lt;1&gt;::instance();
+	logger.write("\n  static logger still at work");
+
+	for (size_t i = 0; i&lt;5; ++i)
+		logger.write("\n  a log msg");
+	logger.write("\n  suspending logger");
+	logger.pause(true);
+	for (size_t i = 0; i&lt;5; ++i)
+		logger.write("\n  a log msg written while log suspended");
+
+	logger.pause(false);
+	logger.write("\n  a log msg written after log resumed");
+	logger.stop("\n  stopping static logger");
+	logger.wait();
+	out.close();
+}</div>
+
+#endif
+
+<a href = "index.html">Back To Index Page</a>
+</pre></html>

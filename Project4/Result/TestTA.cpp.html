@@ -1,0 +1,48 @@
+<!--GrammarHelpers.cpp.html:-->
+
+<html><script src="jstemplate.js"></script><link rel = "stylesheet" href="csstemplate.css"><h3>TestTA.cpp</h3><hr/><div class = "indent"><h4>Dependencies:</h4><br/><a href = "GrammarHelpers.cpp.html">GrammarHelpers.cpp</a><hr/></div><hr/><pre>
+/////////////////////////////////////////////////////////////////////
+//  TestTA.cpp   - Create a ASTTree and Do Type Analysis Demo      //
+//  ver 1.0                                                        //
+//  Language:      Visual C++ 2015, Community                      //
+//  Platform:      Dell XPS 13 9350, Windows 10 Home               //
+//  Application:   Package for CSE687 Pr2, Sp17                    //
+//  Author:        Jiawei Wang, Syracuse University                //
+//                 (315) 949-8913 , jwang109@syr.edu               //
+/////////////////////////////////////////////////////////////////////
+#include "TypeAnalysis.h"
+#include "../CodeAnalyze/AbstrSynTree.h"
+#ifdef TESTTA
+int main()
+<span onclick = 'show(this, "box0", "hide0")' style = 'background:pink'>-</span>{<div id = 'hide0' style = 'display:none'>...}</div><div id = 'box0' style = 'display:node'>
+	ScopeStack&lt;ASTNode*&gt; stack;
+	AbstrSynTree ast(stack);
+	ASTNode* pX = new ASTNode("namespace", "X");
+	ast.add(pX);                                        // add X scope
+	ASTNode* pf1 = new ASTNode("function", "f1");
+	ast.add(pf1);                                       // add f1 scope
+	ast.pop();                                          // end f1 scope
+	ASTNode* pc1 = new ASTNode("class", "Y");
+	ast.add(pc1);                                       // add c1 scope
+	ast.pop();                                          // end c1 scope
+	
+	ASTNode* pf2 = new ASTNode("function", "gf2");
+	ast.add(pf2);                                       // add gf2 scope
+	ast.pop();                                          // end gf2 scope
+	ast.pop();                                          // end X scope
+
+	TypeAnalysis test;
+	test.DoAnalysis(pX);
+	TypeTable *tb = test.GetTable();
+	NoSqlDb *db = tb-&gt;GetDb();
+
+	std::cout &lt;&lt; "\n Elements in TypeTable" &lt;&lt; std::endl;
+	for (Element elem : db-&gt;IterateMap())
+	<span onclick = 'show(this, "box1", "hide1")' style = 'background:pink'>-</span>{<div id = 'hide1' style = 'display:none'>...}</div><div id = 'box1' style = 'display:node'>
+		std::cout &lt;&lt;" "&lt;&lt; elem.name() &lt;&lt; " " &lt;&lt; elem.type()&lt;&lt;" "&lt;&lt;elem.path() &lt;&lt; std::endl;
+	}</div>
+	return 0;
+}</div>
+#endif
+<a href = "index.html">Back To Index Page</a>
+</pre></html>

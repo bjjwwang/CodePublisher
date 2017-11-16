@@ -1,0 +1,125 @@
+<!---->
+
+<html><script src="jstemplate.js"></script><link rel = "stylesheet" href="csstemplate.css"><h3>Logger.h</h3><hr/><div class = "indent"><h4>Dependencies:</h4><br/></div><hr/><pre>
+#ifndef LOGGER_H
+#define LOGGER_H
+/////////////////////////////////////////////////////////////////////
+// Logger.h - log text messages to std::ostream                    //
+// ver 1.2                                                         //
+//-----------------------------------------------------------------//
+// Jim Fawcett (c) copyright 2015                                  //
+// All rights granted provided this copyright notice is retained   //
+//-----------------------------------------------------------------//
+// Language:    C++, Visual Studio 2015                            //
+// Application: Several Projects, CSE687 - Object Oriented Design  //
+// Author:      Jim Fawcett, Syracuse University, CST 4-187        //
+//              jfawcett@twcny.rr.com                              //
+/////////////////////////////////////////////////////////////////////
+/*
+* Package Operations:
+* -------------------
+* This package supports logging for multiple concurrent clients to a
+* single std::ostream.  It does this be enqueuing messages in a
+* blocking queue and dequeuing with a single thread that writes to
+* the std::ostream.
+*
+* It provides two logging classes, a non-template Logger class with
+* instance methods, and a template class StaticLogger&lt;int&gt; with static
+* methods.
+*
+* In most of my code I use the following definitions:
+*
+*   using Rslt = StaticLogger&lt;0&gt;;    // show program results
+*   using Demo = StaticLogger&lt;1&gt;;    // show demonstration outputs
+*   using Dbug = StaticLogger&lt;2&gt;;    // show debugging outputs
+*
+* That allows a user to determine the kinds of outputs the program
+* presents based on which of these loggers are started, e.g., by
+* changing only a couple of lines of code.
+*
+* Build Process:
+* --------------
+* Required Files: Logger.h, Logger.cpp, Utilities.h, Utilities.cpp
+*
+* Build Command: devenv logger.sln /rebuild debug
+*
+* Maintenance History:
+* --------------------
+* ver 1.2 : 27 Aug 2016
+* - added flushing of streams in Logger::flush()
+* - call thread join on stop instead of spin locking
+* ver 1.1 : 06 Aug 2016
+* - added member function flush() to wait for output to complete
+* ver 1.0 : 22 Feb 2016
+* - first release
+*
+* Planned Additions and Changes:
+* ------------------------------
+* - fix pause locking
+*/
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;thread&gt;
+#include "../Cpp11-BlockingQueue/Cpp11-BlockingQueue.h"
+
+namespace Logging
+<span onclick = 'show(this, "box0", "hide0")' style = 'background:pink'>-</span>{<div id = 'hide0' style = 'display:none'>...}</div><div id = 'box0' style = 'display:node'>
+	class Logger
+	<span onclick = 'show(this, "box1", "hide1")' style = 'background:pink'>-</span>{<div id = 'hide1' style = 'display:none'>...}</div><div id = 'box1' style = 'display:node'>
+	public:
+		Logger() <span onclick = 'show(this, "box2", "hide2")' style = 'background:pink'>-</span>{<div id = 'hide2' style = 'display:none'>...}</div><div id = 'box2' style = 'display:node'>}</div>
+		void attach(std::ostream* pOut);
+		void start();
+		bool running();
+		void pause(bool doPause);
+		bool paused();
+		void flush();
+		void stop(const std::string& msg = "");
+		void wait();
+		void write(const std::string& msg);
+		void title(const std::string& msg, char underline = '-');
+		~Logger();
+		Logger(const Logger&) = delete;
+		Logger& operator=(const Logger&) = delete;
+	private:
+		std::thread* _pThr;
+		std::vector&lt;std::ostream*&gt; streams_;
+		Async::BlockingQueue&lt;std::string&gt; _queue;
+		bool _ThreadRunning = false;
+		bool _Paused = false;
+	}</div>;
+
+	template&lt;int i&gt;
+	class StaticLogger
+	<span onclick = 'show(this, "box3", "hide3")' style = 'background:pink'>-</span>{<div id = 'hide3' style = 'display:none'>...}</div><div id = 'box3' style = 'display:node'>
+	public:
+		static void attach(std::ostream* pOut) <span onclick = 'show(this, "box4", "hide4")' style = 'background:pink'>-</span>{<div id = 'hide4' style = 'display:none'>...}</div><div id = 'box4' style = 'display:node'> _logger.attach(pOut); }</div>
+		static void start() <span onclick = 'show(this, "box5", "hide5")' style = 'background:pink'>-</span>{<div id = 'hide5' style = 'display:none'>...}</div><div id = 'box5' style = 'display:node'> _logger.start(); }</div>
+		static bool running() <span onclick = 'show(this, "box6", "hide6")' style = 'background:pink'>-</span>{<div id = 'hide6' style = 'display:none'>...}</div><div id = 'box6' style = 'display:node'> return _logger.running(); }</div>
+		static void pause(bool doPause) <span onclick = 'show(this, "box7", "hide7")' style = 'background:pink'>-</span>{<div id = 'hide7' style = 'display:none'>...}</div><div id = 'box7' style = 'display:node'> _logger.pause(doPause); }</div>
+		static void paused() <span onclick = 'show(this, "box8", "hide8")' style = 'background:pink'>-</span>{<div id = 'hide8' style = 'display:none'>...}</div><div id = 'box8' style = 'display:node'> return _logger.paused(); }</div>
+		static void flush() <span onclick = 'show(this, "box9", "hide9")' style = 'background:pink'>-</span>{<div id = 'hide9' style = 'display:none'>...}</div><div id = 'box9' style = 'display:node'> _logger.flush(); }</div>
+		static void stop(const std::string& msg = "") <span onclick = 'show(this, "box10", "hide10")' style = 'background:pink'>-</span>{<div id = 'hide10' style = 'display:none'>...}</div><div id = 'box10' style = 'display:node'> _logger.stop(msg); }</div>
+		static void wait() <span onclick = 'show(this, "box11", "hide11")' style = 'background:pink'>-</span>{<div id = 'hide11' style = 'display:none'>...}</div><div id = 'box11' style = 'display:node'> _logger.wait(); }</div>
+		static void write(const std::string& msg) <span onclick = 'show(this, "box12", "hide12")' style = 'background:pink'>-</span>{<div id = 'hide12' style = 'display:none'>...}</div><div id = 'box12' style = 'display:node'> _logger.write(msg); }</div>
+		static void title(const std::string& msg, char underline = '-') <span onclick = 'show(this, "box13", "hide13")' style = 'background:pink'>-</span>{<div id = 'hide13' style = 'display:none'>...}</div><div id = 'box13' style = 'display:node'> _logger.title(msg, underline); }</div>
+		static Logger& instance() <span onclick = 'show(this, "box14", "hide14")' style = 'background:pink'>-</span>{<div id = 'hide14' style = 'display:none'>...}</div><div id = 'box14' style = 'display:node'> return _logger; }</div>
+		StaticLogger(const StaticLogger&) = delete;
+		StaticLogger& operator=(const StaticLogger&) = delete;
+	private:
+		static Logger _logger;
+	}</div>;
+
+	template&lt;int i&gt;
+	Logger StaticLogger&lt;i&gt;::_logger;
+
+	using Rslt = Logging::StaticLogger&lt;0&gt;;
+	using Demo = Logging::StaticLogger&lt;1&gt;;
+	using Dbug = Logging::StaticLogger&lt;2&gt;;
+}</div>
+#endif
+
+<a href = "index.html">Back To Index Page</a>
+</pre></html>

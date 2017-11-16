@@ -1,0 +1,117 @@
+<!--Cpp11-BlockingQueue.cpp.html:-->
+
+<html><script src="jstemplate.js"></script><link rel = "stylesheet" href="csstemplate.css"><h3>Cpp11-BlockingQueue.h</h3><hr/><div class = "indent"><h4>Dependencies:</h4><br/><a href = "Cpp11-BlockingQueue.cpp.html">Cpp11-BlockingQueue.cpp</a><hr/></div><hr/><pre>
+#ifndef CPP11_BLOCKINGQUEUE_H
+#define CPP11_BLOCKINGQUEUE_H
+///////////////////////////////////////////////////////////////
+// Cpp11-BlockingQueue.h - Thread-safe Blocking Queue        //
+// ver 1.1                                                   //
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2015 //
+///////////////////////////////////////////////////////////////
+/*
+ * Package Operations:
+ * -------------------
+ * This package contains one thread-safe class: BlockingQueue&lt;T&gt;.
+ * Its purpose is to support sending messages between threads.
+ * It is implemented using C++11 threading constructs including 
+ * std::condition_variable and std::mutex.  The underlying storage
+ * is provided by the non-thread-safe std::queue&lt;T&gt;.
+ *
+ * Required Files:
+ * ---------------
+ * Cpp11-BlockingQueue.h
+ *
+ * Build Process:
+ * --------------
+ * devenv Cpp11-BlockingQueue.sln /rebuild debug
+ *
+ * Maintenance History:
+ * --------------------
+ * ver 1.1 : 26 Jan 2015
+ * - added copy constructor and assignment operator
+ * ver 1.0 : 03 Mar 2014
+ * - first release
+ *
+ * ToDo:
+ * -----
+ * - add move constructor and move assignment
+ */
+
+#include &lt;condition_variable&gt;
+#include &lt;mutex&gt;
+#include &lt;thread&gt;
+#include &lt;queue&gt;
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+
+template &lt;typename T&gt;
+class BlockingQueue <span onclick = 'show(this, "box0", "hide0")' style = 'background:pink'>-</span>{<div id = 'hide0' style = 'display:none'>...}</div><div id = 'box0' style = 'display:node'>
+public:
+  BlockingQueue() <span onclick = 'show(this, "box1", "hide1")' style = 'background:pink'>-</span>{<div id = 'hide1' style = 'display:none'>...}</div><div id = 'box1' style = 'display:node'>}</div>
+  BlockingQueue(const BlockingQueue&lt;T&gt;&);
+  BlockingQueue&lt;T&gt;& operator=(const BlockingQueue&lt;T&gt;&);
+  T deQ();
+  void enQ(const T& t);
+  size_t size();
+private:
+  std::queue&lt;T&gt; q_;
+  std::mutex mtx_;
+  std::condition_variable cv_;
+}</div>;
+
+template&lt;typename T&gt;
+BlockingQueue&lt;T&gt;::BlockingQueue(const BlockingQueue&lt;T&gt;& bq) : q_(bq.q_)
+<span onclick = 'show(this, "box2", "hide2")' style = 'background:pink'>-</span>{<div id = 'hide2' style = 'display:none'>...}</div><div id = 'box2' style = 'display:node'>
+  /* can't copy mutex or condition variable, so use default members */
+}</div>
+
+template&lt;typename T&gt;
+BlockingQueue&lt;T&gt;& BlockingQueue&lt;T&gt;::operator=(const BlockingQueue&lt;T&gt;& bq)
+<span onclick = 'show(this, "box3", "hide3")' style = 'background:pink'>-</span>{<div id = 'hide3' style = 'display:none'>...}</div><div id = 'box3' style = 'display:node'>
+  if (this == &bq) return *this;
+  q_ = bq.q_;
+  /* can't assign mutex or condition variable so use target's */
+  return *this;
+}</div>
+
+template&lt;typename T&gt;
+T BlockingQueue&lt;T&gt;::deQ()
+<span onclick = 'show(this, "box4", "hide4")' style = 'background:pink'>-</span>{<div id = 'hide4' style = 'display:none'>...}</div><div id = 'box4' style = 'display:node'>
+  std::unique_lock&lt;std::mutex&gt; l(mtx_);
+  if(q_.size() &gt; 0)
+  <span onclick = 'show(this, "box5", "hide5")' style = 'background:pink'>-</span>{<div id = 'hide5' style = 'display:none'>...}</div><div id = 'box5' style = 'display:node'>
+    T temp = q_.front();
+    q_.pop();
+    return temp;
+  }</div>
+  // may have spurious returns so loop on !condition
+
+  while (q_.size() == 0)
+    cv_.wait(l, [this] () <span onclick = 'show(this, "box6", "hide6")' style = 'background:pink'>-</span>{<div id = 'hide6' style = 'display:none'>...}</div><div id = 'box6' style = 'display:node'> return q_.size() &gt; 0; }</div>);
+  T temp = q_.front();
+  q_.pop();
+  return temp;
+}</div>
+
+template&lt;typename T&gt;
+void BlockingQueue&lt;T&gt;::enQ(const T& t)
+<span onclick = 'show(this, "box7", "hide7")' style = 'background:pink'>-</span>{<div id = 'hide7' style = 'display:none'>...}</div><div id = 'box7' style = 'display:node'>
+  <span onclick = 'show(this, "box8", "hide8")' style = 'background:pink'>-</span>{<div id = 'hide8' style = 'display:none'>...}</div><div id = 'box8' style = 'display:node'>
+    std::lock_guard&lt;std::mutex&gt; l(mtx_);
+    q_.push(t);
+  }</div>
+  cv_.notify_one();
+}</div>
+
+template&lt;typename T&gt;
+size_t BlockingQueue&lt;T&gt;::size()
+<span onclick = 'show(this, "box9", "hide9")' style = 'background:pink'>-</span>{<div id = 'hide9' style = 'display:none'>...}</div><div id = 'box9' style = 'display:node'>
+  std::lock_guard&lt;std::mutex&gt; l(mtx_);
+  return q_.size();
+}</div>
+
+#endif
+
+<a href = "index.html">Back To Index Page</a>
+</pre></html>

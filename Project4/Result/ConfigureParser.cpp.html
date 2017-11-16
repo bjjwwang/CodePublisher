@@ -1,0 +1,248 @@
+<!--ConfigureParser.h.html:-->
+
+<html><script src="jstemplate.js"></script><link rel = "stylesheet" href="csstemplate.css"><h3>ConfigureParser.cpp</h3><hr/><div class = "indent"><h4>Dependencies:</h4><br/><a href = "ConfigureParser.h.html">ConfigureParser.h</a><hr/></div><hr/><pre>
+/////////////////////////////////////////////////////////////////////
+//  ConfigureParser.cpp - builds and configures parsers            //
+//  ver 3.2                                                        //
+//                                                                 //
+//  Lanaguage:     Visual C++ 2005                                 //
+//  Platform:      Dell Dimension 9150, Windows XP SP2             //
+//  Application:   Prototype for CSE687 Pr1, Sp06                  //
+//  Author:        Jim Fawcett, CST 2-187, Syracuse University     //
+//                 (315) 443-3948, jfawcett@twcny.rr.com           //
+/////////////////////////////////////////////////////////////////////
+
+#include &lt;fstream&gt;
+#include "Parser.h"
+#include "SemiExp.h"
+#include "Tokenizer.h"
+#include "ActionsAndRules.h"
+#include "ConfigureParser.h"
+
+using namespace CodeAnalysis;
+using namespace Scanner;
+
+//----&lt; destructor releases all parts &gt;------------------------------
+
+ConfigParseForCodeAnal::~ConfigParseForCodeAnal()
+<span onclick = 'show(this, "box0", "hide0")' style = 'background:pink'>-</span>{<div id = 'hide0' style = 'display:none'>...}</div><div id = 'box0' style = 'display:node'>
+	// when Builder goes out of scope, everything must be deallocated
+
+	delete pHandleBeginScope;
+	delete pBeginScope;
+	delete pHandleEndScope;
+	delete pEndScope;
+	delete pHandlePreprocStatement;
+	delete pPreprocStatement;
+	delete pHandleClassDefinition;
+	delete pClassDefinition;
+	delete pHandleStructDefinition;
+	delete pStructDefinition;
+	delete pHandleEnumDefinition;
+	delete pEnumDefinition;
+	//delete pPrintFunction;
+	delete pHandleCppFunctionDefinition;
+	delete pCppFunctionDefinition;
+	delete pHandleCSharpFunctionDefinition;
+	delete pCSharpFunctionDefinition;
+	delete pCppDeclaration;
+	delete pHandleCppDeclaration;
+	delete pCSharpDeclaration;
+	delete pHandleCSharpDeclaration;
+	delete pCppExecutable;
+	delete pHandleCppExecutable;
+	delete pCSharpExecutable;
+	delete pHandleCSharpExecutable;
+	delete pDefault;
+	delete pHandleDefault;
+	delete pRepo;
+	delete pParser;
+	delete pSemi;
+	delete pToker;
+	if (pIn != nullptr)
+		pIn-&gt;close();
+	delete pIn;
+}</div>
+//----&lt; attach toker to a file stream or stringstream &gt;------------
+
+bool ConfigParseForCodeAnal::Attach(const std::string& name, bool isFile)
+<span onclick = 'show(this, "box1", "hide1")' style = 'background:pink'>-</span>{<div id = 'hide1' style = 'display:none'>...}</div><div id = 'box1' style = 'display:node'>
+	if (pToker == 0)
+		return false;
+	pIn = new std::ifstream(name);
+	if (!pIn-&gt;good())
+		return false;
+
+	// check for Byte Order Mark (BOM)
+	char a, b, c;
+	a = pIn-&gt;get();
+	b = pIn-&gt;get();
+	c = pIn-&gt;get();
+	if (a != (char)0xEF || b != (char)0xBB || c != (char)0xBF)
+		pIn-&gt;seekg(0);
+
+	if (!pIn-&gt;good())
+	<span onclick = 'show(this, "box2", "hide2")' style = 'background:pink'>-</span>{<div id = 'hide2' style = 'display:none'>...}</div><div id = 'box2' style = 'display:node'>
+		// empty file, but openable, so return true, avoids error message
+		return true;
+	}</div>
+	return pToker-&gt;attach(pIn);
+}</div>
+//----&lt; Here's where all the parts get assembled &gt;-----------------
+
+Parser* ConfigParseForCodeAnal::Build()
+<span onclick = 'show(this, "box3", "hide3")' style = 'background:pink'>-</span>{<div id = 'hide3' style = 'display:none'>...}</div><div id = 'box3' style = 'display:node'>
+	try
+	<span onclick = 'show(this, "box4", "hide4")' style = 'background:pink'>-</span>{<div id = 'hide4' style = 'display:none'>...}</div><div id = 'box4' style = 'display:node'>
+		pToker = new Toker;
+		pToker-&gt;returnComments(false);
+		pSemi = new SemiExp(pToker);
+		pParser = new Parser(pSemi);
+		pRepo = new Repository(pToker);
+		pBeginScope = new BeginScope();
+		pHandleBeginScope = new HandleBeginScope(pRepo);
+		pBeginScope-&gt;addAction(pHandleBeginScope);
+		pParser-&gt;addRule(pBeginScope);
+
+		pEndScope = new EndScope();
+		pHandleEndScope = new HandleEndScope(pRepo);
+		pEndScope-&gt;addAction(pHandleEndScope);
+		pParser-&gt;addRule(pEndScope);
+
+		pPreprocStatement = new PreprocStatement;
+		pHandlePreprocStatement = new HandlePreprocStatement(pRepo);
+		pPreprocStatement-&gt;addAction(pHandlePreprocStatement);
+		pParser-&gt;addRule(pPreprocStatement);
+
+		pNamespaceDefinition = new NamespaceDefinition;
+		pHandleNamespaceDefinition = new HandleNamespaceDefinition(pRepo);
+		pNamespaceDefinition-&gt;addAction(pHandleNamespaceDefinition);
+		pParser-&gt;addRule(pNamespaceDefinition);
+
+		pClassDefinition = new ClassDefinition;
+		pHandleClassDefinition = new HandleClassDefinition(pRepo);
+		pClassDefinition-&gt;addAction(pHandleClassDefinition);
+		pParser-&gt;addRule(pClassDefinition);
+
+		pStructDefinition = new StructDefinition;
+		pHandleStructDefinition = new HandleStructDefinition(pRepo);
+		pStructDefinition-&gt;addAction(pHandleStructDefinition);
+		pParser-&gt;addRule(pStructDefinition);
+
+		pEnumDefinition = new EnumDefinition;
+		pHandleEnumDefinition = new HandleEnumDefinition(pRepo);
+		pEnumDefinition-&gt;addAction(pHandleEnumDefinition);
+		pParser-&gt;addRule(pEnumDefinition);
+		return Build2();
+	}</div>
+	catch (std::exception& ex)<span onclick = 'show(this, "box5", "hide5")' style = 'background:pink'>-</span>{<div id = 'hide5' style = 'display:none'>...}</div><div id = 'box5' style = 'display:node'>
+		std::cout &lt;&lt; "\n\n  " &lt;&lt; ex.what() &lt;&lt; "\n\n";
+		return 0;
+	}</div>
+}</div>
+
+Parser* ConfigParseForCodeAnal::Build2()
+<span onclick = 'show(this, "box6", "hide6")' style = 'background:pink'>-</span>{<div id = 'hide6' style = 'display:none'>...}</div><div id = 'box6' style = 'display:node'>
+	pCppFunctionDefinition = new CppFunctionDefinition;
+	pHandleCppFunctionDefinition = new HandleCppFunctionDefinition(pRepo);  // no action
+	pCppFunctionDefinition-&gt;addAction(pHandleCppFunctionDefinition);
+	pParser-&gt;addRule(pCppFunctionDefinition);
+
+	pCSharpFunctionDefinition = new CSharpFunctionDefinition;
+	pHandleCSharpFunctionDefinition = new HandleCSharpFunctionDefinition(pRepo);  // no action
+	pCSharpFunctionDefinition-&gt;addAction(pHandleCSharpFunctionDefinition);
+	pParser-&gt;addRule(pCSharpFunctionDefinition);
+
+	// configure to detect and act on declarations and Executables
+
+	pControlDefinition = new ControlDefinition;
+	pHandleControlDefinition = new HandleControlDefinition(pRepo);
+	pControlDefinition-&gt;addAction(pHandleControlDefinition);
+	pParser-&gt;addRule(pControlDefinition);
+
+	pCppDeclaration = new CppDeclaration;
+	pHandleCppDeclaration = new HandleCppDeclaration(pRepo);
+	pCppDeclaration-&gt;addAction(pHandleCppDeclaration);
+	pParser-&gt;addRule(pCppDeclaration);
+
+	pCSharpDeclaration = new CSharpDeclaration;
+	pHandleCSharpDeclaration = new HandleCSharpDeclaration(pRepo);
+	pCSharpDeclaration-&gt;addAction(pHandleCSharpDeclaration);
+	pParser-&gt;addRule(pCSharpDeclaration);
+
+	pCppExecutable = new CppExecutable;
+	pHandleCppExecutable = new HandleCppExecutable(pRepo);
+	pCppExecutable-&gt;addAction(pHandleCppExecutable);
+	pParser-&gt;addRule(pCppExecutable);
+
+	pCSharpExecutable = new CSharpExecutable;
+	pHandleCSharpExecutable = new HandleCSharpExecutable(pRepo);
+	pCSharpExecutable-&gt;addAction(pHandleCSharpExecutable);
+	pParser-&gt;addRule(pCSharpExecutable);
+
+	pDefault = new Default;
+	pHandleDefault = new HandleDefault(pRepo);
+	pDefault-&gt;addAction(pHandleDefault);
+	pParser-&gt;addRule(pDefault);
+
+	return pParser;
+}</div>
+#ifdef TEST_CONFIGUREPARSER
+
+#include &lt;queue&gt;
+#include &lt;string&gt;
+
+int main(int argc, char* argv[])
+<span onclick = 'show(this, "box7", "hide7")' style = 'background:pink'>-</span>{<div id = 'hide7' style = 'display:none'>...}</div><div id = 'box7' style = 'display:node'>
+	std::cout &lt;&lt; "\n  Testing ConfigureParser module\n "
+		&lt;&lt; std::string(32, '=') &lt;&lt; std::endl;
+
+	// collecting tokens from files, named on the command line
+
+	if (argc &lt; 2)
+	<span onclick = 'show(this, "box8", "hide8")' style = 'background:pink'>-</span>{<div id = 'hide8' style = 'display:none'>...}</div><div id = 'box8' style = 'display:node'>
+		std::cout
+			&lt;&lt; "\n  please enter name of file to process on command line\n\n";
+		return 1;
+	}</div>
+
+	for (int i = 1; i&lt;argc; ++i)
+	<span onclick = 'show(this, "box9", "hide9")' style = 'background:pink'>-</span>{<div id = 'hide9' style = 'display:none'>...}</div><div id = 'box9' style = 'display:node'>
+		std::cout &lt;&lt; "\n  Processing file " &lt;&lt; argv[i];
+		std::cout &lt;&lt; "\n  " &lt;&lt; std::string(16 + strlen(argv[i]), '-');
+
+		ConfigParseForCodeAnal configure;
+		Parser* pParser = configure.Build();
+		try
+		<span onclick = 'show(this, "box10", "hide10")' style = 'background:pink'>-</span>{<div id = 'hide10' style = 'display:none'>...}</div><div id = 'box10' style = 'display:node'>
+			if (pParser)
+			<span onclick = 'show(this, "box11", "hide11")' style = 'background:pink'>-</span>{<div id = 'hide11' style = 'display:none'>...}</div><div id = 'box11' style = 'display:node'>
+				if (!configure.Attach(argv[i]))
+				<span onclick = 'show(this, "box12", "hide12")' style = 'background:pink'>-</span>{<div id = 'hide12' style = 'display:none'>...}</div><div id = 'box12' style = 'display:node'>
+					std::cout &lt;&lt; "\n  could not open file " &lt;&lt; argv[i] &lt;&lt; std::endl;
+					continue;
+				}</div>
+			}</div>
+			else
+			<span onclick = 'show(this, "box13", "hide13")' style = 'background:pink'>-</span>{<div id = 'hide13' style = 'display:none'>...}</div><div id = 'box13' style = 'display:node'>
+				std::cout &lt;&lt; "\n\n  Parser not built\n\n";
+				return 1;
+			}</div>
+			// now that parser is built, use it
+
+			while (pParser-&gt;next())
+				pParser-&gt;parse();
+			std::cout &lt;&lt; "\n\n";
+		}</div>
+		catch (std::exception& ex)
+		<span onclick = 'show(this, "box14", "hide14")' style = 'background:pink'>-</span>{<div id = 'hide14' style = 'display:none'>...}</div><div id = 'box14' style = 'display:node'>
+			std::cout &lt;&lt; "\n\n    " &lt;&lt; ex.what() &lt;&lt; "\n\n";
+		}</div>
+		std::cout &lt;&lt; "\n\n";
+	}</div>
+}</div>
+
+#endif
+
+<a href = "index.html">Back To Index Page</a>
+</pre></html>

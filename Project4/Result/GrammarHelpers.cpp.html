@@ -1,0 +1,626 @@
+<!--GrammarHelpers.h.html:Logger.h.html:-->
+
+<html><script src="jstemplate.js"></script><link rel = "stylesheet" href="csstemplate.css"><h3>GrammarHelpers.cpp</h3><hr/><div class = "indent"><h4>Dependencies:</h4><br/><a href = "GrammarHelpers.h.html">GrammarHelpers.h</a><hr/><a href = "Logger.h.html">Logger.h</a><hr/></div><hr/><pre>
+/////////////////////////////////////////////////////////////////////////
+// GrammarHelpers.cpp - Functions providing base grammatical analyses  //
+// ver 1.3                                                             //
+// Language:    C++, Visual Studio 2015                                //
+// Application: Support for Parsing, CSE687 - Object Oriented Design   //
+// Author:      Jim Fawcett, Syracuse University, CST 4-187            //
+//              jfawcett@twcny.rr.com                                  //
+/////////////////////////////////////////////////////////////////////////
+
+#include "GrammarHelpers.h"
+#include "SemiExp.h"
+#include "Logger.h"
+#include "Utilities.h"
+#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+#include &lt;sstream&gt;
+
+using namespace CodeAnalysis;
+
+//----&lt; is tok a control keyword for either C++ or C# ? &gt;------------
+
+bool GrammarHelper::isControlKeyWord(const std::string& tok)
+<span onclick = 'show(this, "box0", "hide0")' style = 'background:pink'>-</span>{<div id = 'hide0' style = 'display:none'>...}</div><div id = 'box0' style = 'display:node'>
+	const static size_t numKeys = 9;
+	const static std::string keys[numKeys]
+		= <span onclick = 'show(this, "box1", "hide1")' style = 'background:pink'>-</span>{<div id = 'hide1' style = 'display:none'>...}</div><div id = 'box1' style = 'display:node'> "for", "foreach", "do", "while", "switch", "if", "else", "try", "catch" }</div>;
+
+	for (int i = 0; i &lt; numKeys; ++i)
+	<span onclick = 'show(this, "box2", "hide2")' style = 'background:pink'>-</span>{<div id = 'hide2' style = 'display:none'>...}</div><div id = 'box2' style = 'display:node'>
+		if (tok == keys[i])
+			return true;
+	}</div>
+	return false;
+}</div>
+//----&lt; does SemiExp contain at least one control keyword ? &gt;--------
+
+bool GrammarHelper::hasControlKeyWord(const Scanner::ITokCollection& se)
+<span onclick = 'show(this, "box3", "hide3")' style = 'background:pink'>-</span>{<div id = 'hide3' style = 'display:none'>...}</div><div id = 'box3' style = 'display:node'>
+	for (size_t i = 0; i &lt; se.length(); ++i)
+	<span onclick = 'show(this, "box4", "hide4")' style = 'background:pink'>-</span>{<div id = 'hide4' style = 'display:none'>...}</div><div id = 'box4' style = 'display:node'>
+		if (GrammarHelper::isControlKeyWord(se[i]))
+			return true;
+	}</div>
+	return false;
+}</div>
+//----&lt; is semiExp a function defin or declar ? &gt;--------------------
+
+bool GrammarHelper::isFunction(const Scanner::ITokCollection& se)
+<span onclick = 'show(this, "box5", "hide5")' style = 'background:pink'>-</span>{<div id = 'hide5' style = 'display:none'>...}</div><div id = 'box5' style = 'display:node'>
+	size_t len = se.find("(");
+	if (0 &lt; len && len &lt; se.length() && !isControlKeyWord(se[len - 1]))
+		return true;
+	if (len == 0)
+	<span onclick = 'show(this, "box6", "hide6")' style = 'background:pink'>-</span>{<div id = 'hide6' style = 'display:none'>...}</div><div id = 'box6' style = 'display:node'>
+		size_t posEquals = se.find("=");
+		if (posEquals &lt; se.length() - 1 && se[posEquals + 1] == "&gt;")
+		<span onclick = 'show(this, "box7", "hide7")' style = 'background:pink'>-</span>{<div id = 'hide7' style = 'display:none'>...}</div><div id = 'box7' style = 'display:node'>
+			// C# lambda
+			return true;
+		}</div>
+	}</div>
+	return false;
+}</div>
+//----&lt; has function and function has at least one argument &gt;--------
+
+bool GrammarHelper::hasArgs(const Scanner::ITokCollection& se)
+<span onclick = 'show(this, "box8", "hide8")' style = 'background:pink'>-</span>{<div id = 'hide8' style = 'display:none'>...}</div><div id = 'box8' style = 'display:node'>
+	if (!isFunction(se))
+		return false;
+
+	size_t posOpenParen = se.find("(");
+	size_t posCloseParen = se.find(")");
+	if (posOpenParen &lt; posCloseParen && posCloseParen &lt; se.length())
+	<span onclick = 'show(this, "box9", "hide9")' style = 'background:pink'>-</span>{<div id = 'hide9' style = 'display:none'>...}</div><div id = 'box9' style = 'display:node'>
+		if (posCloseParen &gt; posOpenParen + 1)
+			return true;
+	}</div>
+	return false;
+}</div>
+//----&lt; is semiExp a function defin or declar ? &gt;--------------------
+
+bool GrammarHelper::isFunctionDefinition(const Scanner::ITokCollection& se)
+<span onclick = 'show(this, "box10", "hide10")' style = 'background:pink'>-</span>{<div id = 'hide10' style = 'display:none'>...}</div><div id = 'box10' style = 'display:node'>
+	if (se.length() &gt; 0 && se[se.length() - 1] != "<span onclick = 'show(this, "box11", "hide11")' style = 'background:pink'>-</span>{<div id = 'hide11' style = 'display:none'>...}</div><div id = 'box11' style = 'display:node'>")
+		return false;
+
+	if (isFunction(se))
+		return true;
+
+	return false;
+}</div>
+//----&lt; find last matching token in semiExp &gt;------------------------
+
+size_t GrammarHelper::findLast(const Scanner::ITokCollection& se, const std::string& token)
+<span onclick = 'show(this, "box12", "hide12")' style = 'background:pink'>-</span>{<div id = 'hide12' style = 'display:none'>...}</div><div id = 'box12' style = 'display:node'>
+	size_t endIndex = se.length() - 1;
+	for (size_t i = 0; i &lt; se.length(); ++i)
+	<span onclick = 'show(this, "box13", "hide13")' style = 'background:pink'>-</span>{<div id = 'hide13' style = 'display:none'>...}</div><div id = 'box13' style = 'display:node'>
+		std::string debugTok = se[endIndex - i];
+		if (se[endIndex - i] == token)
+			return endIndex - i;
+	}</div>
+	return se.length();
+}</div>
+//----&lt; is tok a type qualifier keyword ? &gt;--------------------------
+
+bool GrammarHelper::isQualifierKeyWord(const std::string& tok)
+<span onclick = 'show(this, "box14", "hide14")' style = 'background:pink'>-</span>{<div id = 'hide14' style = 'display:none'>...}</div><div id = 'box14' style = 'display:node'>
+	const size_t numKeys = 21;            // its declar else executable.
+	const static std::string keys[numKeys] = <span onclick = 'show(this, "box15", "hide15")' style = 'background:pink'>-</span>{<div id = 'hide15' style = 'display:none'>...}</div><div id = 'box15' style = 'display:node'>
+		"const", "extern", "friend", "mutable", "signed", "static", "abstract",
+		"typedef", "typename", "unsigned", "volatile", "&", "*", /*"std",*/ /*"::",*/
+		"public", "protected", "private", ":", "typename", "typedef", "++", "--"
+	}</div>;
+	for (int i = 0; i &lt; numKeys; ++i)
+		if (tok == keys[i])
+			return true;
+	return false;
+}</div>
+//----&lt; strip qualifier keywords from semiExp &gt;----------------------
+
+void GrammarHelper::removeQualifiers(Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box16", "hide16")' style = 'background:pink'>-</span>{<div id = 'hide16' style = 'display:none'>...}</div><div id = 'box16' style = 'display:node'>
+	size_t i = 0;
+	while (i &lt; tc.length())
+	<span onclick = 'show(this, "box17", "hide17")' style = 'background:pink'>-</span>{<div id = 'hide17' style = 'display:none'>...}</div><div id = 'box17' style = 'display:node'>
+		if (isQualifierKeyWord(tc[i]))
+			tc.remove(i);
+		else
+			++i;
+	}</div>
+}</div>
+//----&lt; remove calling argument qualifiers after first paren &gt;-------
+
+void GrammarHelper::removeCallingArgQualifiers(Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box18", "hide18")' style = 'background:pink'>-</span>{<div id = 'hide18' style = 'display:none'>...}</div><div id = 'box18' style = 'display:node'>
+	std::string debug = tc.show();
+
+	size_t begin = tc.find("(");
+	size_t end = tc.find(")");
+	if (begin == tc.length() || end == tc.length() || begin &gt;= end)
+		return;
+	size_t i = begin + 1;
+	while (true)
+	<span onclick = 'show(this, "box19", "hide19")' style = 'background:pink'>-</span>{<div id = 'hide19' style = 'display:none'>...}</div><div id = 'box19' style = 'display:node'>
+		if (isQualifierKeyWord(tc[i]))
+			tc.remove(tc[i]);
+		if (tc[i] == ")")
+			break;
+		++i;
+	}</div>
+}</div>
+//----&lt; is token a scope connector ? &gt;-------------------------------
+
+bool isScopeConnector(const std::string& tok)
+<span onclick = 'show(this, "box20", "hide20")' style = 'background:pink'>-</span>{<div id = 'hide20' style = 'display:none'>...}</div><div id = 'box20' style = 'display:node'>
+	if (tok == "::" || tok == ".")
+		return true;
+	return false;
+}</div>
+//----&lt; is first function argument a declaration ? &gt;-----------------
+
+bool GrammarHelper::isFirstArgDeclaration(const Scanner::ITokCollection& tc, const std::string& parentType)
+<span onclick = 'show(this, "box21", "hide21")' style = 'background:pink'>-</span>{<div id = 'hide21' style = 'display:none'>...}</div><div id = 'box21' style = 'display:node'>
+	if (!isFunction(tc))
+		return false;  // not a function
+
+	if (parentType == "function")
+		return false;  // functions don't declare other functions
+
+	Scanner::SemiExp se;
+	se.clone(tc);
+
+	removeCallingArgQualifiers(se);
+
+	size_t posOpenParen = se.find("(");
+	size_t posComma = se.find(",");
+	size_t posEqual = se.find("=");
+	size_t posCloseParen = se.find(")");
+
+	// must have two adjacent terms without connector, e.g., type and name
+
+	size_t posEnd = (posComma &lt; posEqual) ? posComma : posEqual;
+	posEnd = (posEnd &lt; posCloseParen) ? posEnd : posCloseParen;
+	size_t numArgTerms = posEnd - posOpenParen - 1;
+	switch (numArgTerms)
+	<span onclick = 'show(this, "box22", "hide22")' style = 'background:pink'>-</span>{<div id = 'hide22' style = 'display:none'>...}</div><div id = 'box22' style = 'display:node'>
+	case 1:
+		// must be executable
+		return false;
+		break;
+	case 2:
+		// type name
+		return true;
+		break;
+	case 4:
+		// namespace :: type name
+		return true;
+		break;
+	default:
+		// not an argument declaration
+		break;
+	}</div>
+	return false;
+}</div>
+//----&lt; is this a function declaration ? &gt;---------------------------
+
+bool GrammarHelper::isFunctionDeclaration(const Scanner::ITokCollection& tc, const std::string& parentType)
+<span onclick = 'show(this, "box23", "hide23")' style = 'background:pink'>-</span>{<div id = 'hide23' style = 'display:none'>...}</div><div id = 'box23' style = 'display:node'>
+	std::string debug = tc.show();
+
+	if (tc.length() == 0)
+		return false;
+
+	if (tc.length() == 1)  // ; or <span onclick = 'show(this, "box24", "hide24")' style = 'background:pink'>-</span>{<div id = 'hide24' style = 'display:none'>...}</div><div id = 'box24' style = 'display:node'>
+		return false;
+
+	if (tc[tc.length() - 1] != ";")
+		return false;
+
+	std::string tok = tc[tc.length() - 2];
+	if (tok == "delete" || tok == "default")
+		return true;
+
+	if (parentType == "function")
+		return false;
+
+	if (!isFunction(tc))
+		return false;
+
+	if (tc.find("operator") &lt; tc.length())
+		return true;
+
+	Scanner::SemiExp se;
+	se.clone(tc);
+
+	if (isFirstArgDeclaration(se, parentType) || !hasArgs(se))
+		return true;
+
+	return false;
+}</div>
+//----&lt; is this a function invocation ? &gt;----------------------------
+/*
+*  will return false unless invocation uses first paren in SemiExp
+*/
+bool GrammarHelper::isFunctionInvocation(const Scanner::ITokCollection& tc, const std::string& parentType)
+<span onclick = 'show(this, "box25", "hide25")' style = 'background:pink'>-</span>{<div id = 'hide25' style = 'display:none'>...}</div><div id = 'box25' style = 'display:node'>
+	if (tc.length() == 1)  // ; or <span onclick = 'show(this, "box26", "hide26")' style = 'background:pink'>-</span>{<div id = 'hide26' style = 'display:none'>...}</div><div id = 'box26' style = 'display:node'>
+		return false;
+
+	if (parentType != "function")
+		return false;
+
+	if (isFunction(tc) && !isFunctionDeclaration(tc, parentType) && !isFunctionDefinition(tc))
+		return true;
+
+	return false;
+}</div>
+//----&lt; has function invocation somewhere in expression ? &gt;----------
+
+bool GrammarHelper::hasFunctionInvocation(const Scanner::ITokCollection& tc, const std::string& parentType)
+<span onclick = 'show(this, "box27", "hide27")' style = 'background:pink'>-</span>{<div id = 'hide27' style = 'display:none'>...}</div><div id = 'box27' style = 'display:node'>
+	if (tc.length() == 1)  // ; or <span onclick = 'show(this, "box28", "hide28")' style = 'background:pink'>-</span>{<div id = 'hide28' style = 'display:none'>...}</div><div id = 'box28' style = 'display:node'>
+		return false;
+
+	if (tc.length() &gt; 0 && tc[tc.length() - 1] == "<span onclick = 'show(this, "box29", "hide29")' style = 'background:pink'>-</span>{<div id = 'hide29' style = 'display:none'>...}</div><div id = 'box29' style = 'display:node'>")
+		return false;
+
+	if (parentType != "function")
+		return false;
+
+	size_t posParen = tc.find("(");
+	Scanner::SemiExp test;
+	test.clone(tc, posParen - 1);
+	std::string debug = test.show();
+	while (true)
+	<span onclick = 'show(this, "box30", "hide30")' style = 'background:pink'>-</span>{<div id = 'hide30' style = 'display:none'>...}</div><div id = 'box30' style = 'display:node'>
+		if (isFunctionInvocation(test, parentType))
+			return true;
+		posParen = test.find("(", posParen + 1);
+		if (posParen == test.length())
+			return false;
+		Scanner::SemiExp innerTest;
+		innerTest.clone(test, posParen - 1);
+		test = innerTest;
+		std::string debug = test.show();
+	}</div>
+	return false;
+}</div>
+//----&lt; is this a data declaration ? &gt;-------------------------------
+
+bool GrammarHelper::isDataDeclaration(const Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box31", "hide31")' style = 'background:pink'>-</span>{<div id = 'hide31' style = 'display:none'>...}</div><div id = 'box31' style = 'display:node'>
+	std::string debug3 = tc.show();
+
+	if (tc.length() == 1)  // ; or <span onclick = 'show(this, "box32", "hide32")' style = 'background:pink'>-</span>{<div id = 'hide32' style = 'display:none'>...}</div><div id = 'box32' style = 'display:node'>
+		return false;
+
+	if (tc.length() &gt; 0 && tc[tc.length() - 1] != ";")
+		return false;
+
+	if (tc.length() &gt; 0 && (tc[0] == "~" || tc[0] == "return"))
+		return false;
+
+	if (hasControlKeyWord(tc))
+		return false;
+
+	if (tc.find("&lt;&lt;") &lt; tc.length() || tc.find("&gt;&gt;") &lt; tc.length())
+		return false;
+
+	std::string debug = tc.show();
+
+	Scanner::SemiExp se;
+	se.clone(tc);
+	condenseTemplateTypes(se);
+	removeQualifiers(se);
+	removeCppInitializers(se);
+
+	// is this a function declaration ?
+
+	size_t posParen = se.find("(");
+	if (posParen &lt; se.length() && (posParen == 2 || posParen == 3))
+		return false;
+
+	removeFunctionArgs(se);
+
+	// is stripped tc of the form "type name ;" or "namespace :: type name ;"
+
+	std::string debug2 = se.show();
+
+	if (se.length() == 3)
+		return true;
+	if (se.length() == 5 && se[1] == "::")
+		return true;
+
+	return false;
+}</div>
+//----&lt; is this an executable statement ? &gt;--------------------------
+
+bool GrammarHelper::isExecutable(const Scanner::ITokCollection& tc, const std::string& parentType)
+<span onclick = 'show(this, "box33", "hide33")' style = 'background:pink'>-</span>{<div id = 'hide33' style = 'display:none'>...}</div><div id = 'box33' style = 'display:node'>
+	if (tc.length() == 1)  // ; or <span onclick = 'show(this, "box34", "hide34")' style = 'background:pink'>-</span>{<div id = 'hide34' style = 'display:none'>...}</div><div id = 'box34' style = 'display:node'>
+		return false;
+
+	if (isFunctionDefinition(tc))
+		return false;
+	if (isFunctionDeclaration(tc, parentType))
+		return false;
+	if (isDataDeclaration(tc))
+		return false;
+	return true;
+}</div>
+//----&lt; remove initializers from C++ semiExp &gt;-----------------------
+
+void GrammarHelper::removeCppInitializers(Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box35", "hide35")' style = 'background:pink'>-</span>{<div id = 'hide35' style = 'display:none'>...}</div><div id = 'box35' style = 'display:node'>
+	std::string debug = tc.show();
+	for (size_t i = 0; i &lt; tc.length(); ++i)
+	<span onclick = 'show(this, "box36", "hide36")' style = 'background:pink'>-</span>{<div id = 'hide36' style = 'display:none'>...}</div><div id = 'box36' style = 'display:node'>
+		if (tc[i] == "=" || tc[i] == "<span onclick = 'show(this, "box37", "hide37")' style = 'background:pink'>-</span>{<div id = 'hide37' style = 'display:none'>...}</div><div id = 'box37' style = 'display:node'>")
+		<span onclick = 'show(this, "box38", "hide38")' style = 'background:pink'>-</span>{<div id = 'hide38' style = 'display:none'>...}</div><div id = 'box38' style = 'display:node'>
+			size_t j = i;
+			while (j &lt; tc.length() && tc[j] != ";")
+			<span onclick = 'show(this, "box39", "hide39")' style = 'background:pink'>-</span>{<div id = 'hide39' style = 'display:none'>...}</div><div id = 'box39' style = 'display:node'>
+				tc.remove(j);
+			}</div>
+			break;
+		}</div>
+	}</div>
+	if (tc.length() &gt; 0 && tc[tc.length() - 1] != ";")
+		tc.push_back(";");
+}</div>
+//----&lt; remove initializers from C# semiExp &gt;------------------------
+
+void GrammarHelper::removeCSharpInitializers(Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box40", "hide40")' style = 'background:pink'>-</span>{<div id = 'hide40' style = 'display:none'>...}</div><div id = 'box40' style = 'display:node'>
+	std::string debug = tc.show();
+	for (size_t i = 0; i &lt; tc.length(); ++i)
+	<span onclick = 'show(this, "box41", "hide41")' style = 'background:pink'>-</span>{<div id = 'hide41' style = 'display:none'>...}</div><div id = 'box41' style = 'display:node'>
+		if (tc[i] == "=")
+		<span onclick = 'show(this, "box42", "hide42")' style = 'background:pink'>-</span>{<div id = 'hide42' style = 'display:none'>...}</div><div id = 'box42' style = 'display:node'>
+			size_t j = i;
+			while (j &lt; tc.length() && tc[j] != ";")
+			<span onclick = 'show(this, "box43", "hide43")' style = 'background:pink'>-</span>{<div id = 'hide43' style = 'display:none'>...}</div><div id = 'box43' style = 'display:node'>
+				tc.remove(j);
+			}</div>
+			break;
+		}</div>
+	}</div>
+	if (tc.length() &gt; 0 && tc[tc.length() - 1] != ";")
+		tc.push_back(";");
+}</div>
+//----&lt; remove comments from semiExp &gt;-------------------------------
+
+void GrammarHelper::removeComments(Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box44", "hide44")' style = 'background:pink'>-</span>{<div id = 'hide44' style = 'display:none'>...}</div><div id = 'box44' style = 'display:node'>
+	size_t i = 0;
+	while (true)
+	<span onclick = 'show(this, "box45", "hide45")' style = 'background:pink'>-</span>{<div id = 'hide45' style = 'display:none'>...}</div><div id = 'box45' style = 'display:node'>
+		if (tc.isComment(tc[i]))
+			tc.remove(i);
+		if (++i == tc.length())
+			break;
+	}</div>
+}</div>
+//----&lt; condense template spec to single token &gt;---------------------
+
+void GrammarHelper::condenseTemplateTypes(Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box46", "hide46")' style = 'background:pink'>-</span>{<div id = 'hide46' style = 'display:none'>...}</div><div id = 'box46' style = 'display:node'>
+	size_t start = tc.find("&lt;");
+	size_t end = tc.find("&gt;");
+	if (start &gt;= end || start == 0)
+		return;
+	else
+	<span onclick = 'show(this, "box47", "hide47")' style = 'background:pink'>-</span>{<div id = 'hide47' style = 'display:none'>...}</div><div id = 'box47' style = 'display:node'>
+		if (end == tc.length())
+			end = tc.find("&gt;::");
+		if (end == tc.length())
+			return;
+	}</div>
+	std::string save = tc[end];
+	std::string tok = tc[start - 1];
+	for (size_t i = start; i &lt; end + 1; ++i)
+	<span onclick = 'show(this, "box48", "hide48")' style = 'background:pink'>-</span>{<div id = 'hide48' style = 'display:none'>...}</div><div id = 'box48' style = 'display:node'>
+		tok += tc[i];
+		if (tc[i] == "typename" || tc[i] == "class")
+			tok += " ";
+	}</div>
+	for (size_t i = start; i &lt; end + 1; ++i)
+		tc.remove(start);
+	if (save == "&gt;::")
+	<span onclick = 'show(this, "box49", "hide49")' style = 'background:pink'>-</span>{<div id = 'hide49' style = 'display:none'>...}</div><div id = 'box49' style = 'display:node'>
+		tok += tc[start + 1];
+		tc.remove(start);
+	}</div>
+	tc[start - 1] = tok;
+	//std::cout &lt;&lt; "\n  -- " &lt;&lt; tc.show();
+}</div>
+//----&lt; remove function's formal arguments &gt;-------------------------
+
+void GrammarHelper::removeFunctionArgs(Scanner::ITokCollection& tc)
+<span onclick = 'show(this, "box50", "hide50")' style = 'background:pink'>-</span>{<div id = 'hide50' style = 'display:none'>...}</div><div id = 'box50' style = 'display:node'>
+	std::string debug = tc.show();
+
+	size_t start = tc.find("(");
+	size_t end = tc.find(")");
+	if (start &gt;= end || end == tc.length() || start == 0)
+		return;
+	if (GrammarHelper::isControlKeyWord(tc[start - 1]))
+		return;
+	for (size_t i = start; i &lt; end + 1; ++i)
+		tc.remove(start);
+	//std::cout &lt;&lt; "\n  -- " &lt;&lt; tc.show();
+}</div>
+//----&lt; show semiExp with Dbug logger &gt;------------------------------
+
+void GrammarHelper::showParse(const std::string& msg, const Scanner::ITokCollection& se)
+<span onclick = 'show(this, "box51", "hide51")' style = 'background:pink'>-</span>{<div id = 'hide51' style = 'display:none'>...}</div><div id = 'box51' style = 'display:node'>
+	using Dbug = Logging::StaticLogger&lt;2&gt;;
+	if (Dbug::running())
+	<span onclick = 'show(this, "box52", "hide52")' style = 'background:pink'>-</span>{<div id = 'hide52' style = 'display:none'>...}</div><div id = 'box52' style = 'display:node'>
+		std::ostringstream out;
+		out &lt;&lt; "\n  " &lt;&lt; std::left &lt;&lt; std::setw(15) &lt;&lt; msg &lt;&lt; ": ";
+		std::string temp = se.show();
+		if (temp.size() &gt; 80)
+			out &lt;&lt; "\n    ";
+		out &lt;&lt; temp;
+		Dbug::write(out.str());
+	}</div>
+}</div>
+
+void GrammarHelper::showParseDemo(const std::string& msg, const Scanner::ITokCollection& se)
+<span onclick = 'show(this, "box53", "hide53")' style = 'background:pink'>-</span>{<div id = 'hide53' style = 'display:none'>...}</div><div id = 'box53' style = 'display:node'>
+	using Demo = Logging::StaticLogger&lt;1&gt;;
+	if (Demo::running())
+	<span onclick = 'show(this, "box54", "hide54")' style = 'background:pink'>-</span>{<div id = 'hide54' style = 'display:none'>...}</div><div id = 'box54' style = 'display:node'>
+		std::ostringstream out;
+		out &lt;&lt; "\n  " &lt;&lt; std::left &lt;&lt; std::setw(32) &lt;&lt; msg &lt;&lt; ": ";
+		std::string temp = se.show();
+		if (temp.size() &gt; 80)
+			out &lt;&lt; "\n    ";
+		out &lt;&lt; temp;
+		Demo::write(out.str());
+	}</div>
+}</div>
+
+#ifdef TEST_GRAMMARHELPERS
+
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+#include "../SemiExp/SemiExp.h"
+#include "../Utilities/Utilities.h"
+
+using namespace Scanner;
+using Token = std::string;
+using Toks = std::vector&lt;Token&gt;;
+
+void load(const Toks& toks, SemiExp& se)
+<span onclick = 'show(this, "box55", "hide55")' style = 'background:pink'>-</span>{<div id = 'hide55' style = 'display:none'>...}</div><div id = 'box55' style = 'display:node'>
+	se.clear();
+	for (auto item : toks)
+		se.push_back(item);
+}</div>
+
+std::string showQualifiers(const SemiExp& se)
+<span onclick = 'show(this, "box56", "hide56")' style = 'background:pink'>-</span>{<div id = 'hide56' style = 'display:none'>...}</div><div id = 'box56' style = 'display:node'>
+	std::string temp;
+	for (size_t i = 0; i &lt; se.length(); ++i)
+		if (GrammarHelper::isQualifierKeyWord(se[i]))
+			temp += se[i] + " ";
+	return temp;
+}</div>
+
+void showPredicate(bool predicate, const std::string& msg)
+<span onclick = 'show(this, "box57", "hide57")' style = 'background:pink'>-</span>{<div id = 'hide57' style = 'display:none'>...}</div><div id = 'box57' style = 'display:node'>
+	if (predicate)
+		std::cout &lt;&lt; "\n    " &lt;&lt; msg;
+	else
+		std::cout &lt;&lt; "\n    not " &lt;&lt; msg;
+}</div>
+
+std::string show(const ITokCollection& se)
+<span onclick = 'show(this, "box58", "hide58")' style = 'background:pink'>-</span>{<div id = 'hide58' style = 'display:none'>...}</div><div id = 'box58' style = 'display:node'>
+	std::string temp;
+	for (size_t i = 0; i &lt; se.length(); ++i)
+		temp += se[i] + " ";
+	return temp;
+}</div>
+
+void test(const SemiExp& seIn)
+<span onclick = 'show(this, "box59", "hide59")' style = 'background:pink'>-</span>{<div id = 'hide59' style = 'display:none'>...}</div><div id = 'box59' style = 'display:node'>
+	Scanner::SemiExp se;
+	se.clone(seIn);
+
+	Utilities::StringHelper::title("Testing GrammarHelpers");
+	std::cout &lt;&lt; "\n  " &lt;&lt; show(se);
+	se.trim();
+	std::cout &lt;&lt; "\n    removing comments:  " &lt;&lt; show(se);
+	std::cout &lt;&lt; "\n    index of last \"(\" is " &lt;&lt; GrammarHelper::findLast(seIn, "(");
+	std::cout &lt;&lt; "\n    qualifier keywords are: " &lt;&lt; showQualifiers(seIn);
+
+	std::string debug = se.show();
+	showPredicate(GrammarHelper::isFunctionDefinition(se), "function definition");
+
+	std::string parentType = "function";
+	std::cout &lt;&lt; "\n  parent type = " &lt;&lt; parentType;
+	showPredicate(GrammarHelper::isFunctionDeclaration(se, parentType), "function declaration");
+	showPredicate(GrammarHelper::isFunctionInvocation(se, parentType), "function invocation");
+	showPredicate(GrammarHelper::hasFunctionInvocation(se, parentType), "has function invocation");
+	parentType = "class";
+	std::cout &lt;&lt; "\n  parent type = " &lt;&lt; parentType;
+	showPredicate(GrammarHelper::isFunctionDeclaration(se, parentType), "function declaration");
+	showPredicate(GrammarHelper::isFunctionInvocation(se, parentType), "function invocation");
+	showPredicate(GrammarHelper::hasFunctionInvocation(se, parentType), "has function invocation");
+
+	showPredicate(GrammarHelper::isDataDeclaration(se), "data declaration");
+	showPredicate(GrammarHelper::hasControlKeyWord(se), "found control Keyword");
+
+	SemiExp testSE;
+	testSE.clone(seIn);
+	GrammarHelper::condenseTemplateTypes(testSE);
+	std::cout &lt;&lt; "\n    condensing template types: " &lt;&lt; show(testSE);
+
+	testSE.clone(seIn);
+	GrammarHelper::removeQualifiers(testSE);
+	std::cout &lt;&lt; "\n    removing qualifiers: " &lt;&lt; show(testSE);
+
+	testSE.clone(seIn);
+	GrammarHelper::removeCppInitializers(testSE);
+	std::cout &lt;&lt; "\n    removing C++ initializers: " &lt;&lt; show(testSE);
+
+	testSE.clone(seIn);
+	GrammarHelper::removeFunctionArgs(testSE);
+	std::cout &lt;&lt; "\n    removing function args: " &lt;&lt; show(testSE);
+
+	testSE.clone(seIn);
+	GrammarHelper::removeCallingArgQualifiers(testSE);
+	std::cout &lt;&lt; "\n    removing qualifiers in function calling sequence: " &lt;&lt; show(testSE);
+	std::cout &lt;&lt; "\n";
+}</div>
+int main()
+<span onclick = 'show(this, "box60", "hide60")' style = 'background:pink'>-</span>{<div id = 'hide60' style = 'display:none'>...}</div><div id = 'box60' style = 'display:node'>
+	Utilities::StringHelper::Title("Testing Grammar Functions");
+	std::cout &lt;&lt; "\n  Note:";
+	std::cout &lt;&lt; "\n  - Test functions are applied to SemiExps that they should change and those they should not.";
+	std::cout &lt;&lt; "\n  - The intent is to make sure they do what they are supposed to do without harming SemiExps";
+	std::cout &lt;&lt; "\n  - that should not change.\n";
+
+	Toks tokset0 = <span onclick = 'show(this, "box61", "hide61")' style = 'background:pink'>-</span>{<div id = 'hide61' style = 'display:none'>...}</div><div id = 'box61' style = 'display:node'> "/* Test0 */", ";" }</div>;
+	Toks tokset1 = <span onclick = 'show(this, "box62", "hide62")' style = 'background:pink'>-</span>{<div id = 'hide62' style = 'display:none'>...}</div><div id = 'box62' style = 'display:node'> "/* Test1 */", "extern", "int", "x", "[", "2", "]", "=", "<span onclick = 'show(this, "box63", "hide63")' style = 'background:pink'>-</span>{<div id = 'hide63' style = 'display:none'>...}</div><div id = 'box63' style = 'display:node'>", "1", ",", "2", "}</div>", ";" }</div>;
+	Toks tokset2 = <span onclick = 'show(this, "box64", "hide64")' style = 'background:pink'>-</span>{<div id = 'hide64' style = 'display:none'>...}</div><div id = 'box64' style = 'display:node'> "/* Test2 */", "extern", "int", "x", "[", "2", "]", "<span onclick = 'show(this, "box65", "hide65")' style = 'background:pink'>-</span>{<div id = 'hide65' style = 'display:none'>...}</div><div id = 'box65' style = 'display:node'>", "1", ",", "2", "}</div>", ";" }</div>;
+	Toks tokset3 = <span onclick = 'show(this, "box66", "hide66")' style = 'background:pink'>-</span>{<div id = 'hide66' style = 'display:none'>...}</div><div id = 'box66' style = 'display:node'> "/* Test3 */", "if", "(", "x", "==", "y", ")", "doThing", "(", "3", ")", ";" }</div>;
+	Toks tokset4 = <span onclick = 'show(this, "box67", "hide67")' style = 'background:pink'>-</span>{<div id = 'hide67' style = 'display:none'>...}</div><div id = 'box67' style = 'display:node'> "/* Test4 */", "void", "fun", "(", "int", "anInteger", ")", "<span onclick = 'show(this, "box68", "hide68")' style = 'background:pink'>-</span>{<div id = 'hide68' style = 'display:none'>...}</div><div id = 'box68' style = 'display:node'>" }</div>;
+	Toks tokset5 = <span onclick = 'show(this, "box69", "hide69")' style = 'background:pink'>-</span>{<div id = 'hide69' style = 'display:none'>...}</div><div id = 'box69' style = 'display:node'> "/* Test5 */", "void", "fun", "(", "int", "anInteger", ")", ";" }</div>;
+	Toks tokset6 = <span onclick = 'show(this, "box70", "hide70")' style = 'background:pink'>-</span>{<div id = 'hide70' style = 'display:none'>...}</div><div id = 'box70' style = 'display:node'> "/* Test6 */", "int", "fun", "(", "const", "int", "&", "anItegerRef", ")", ";" }</div>;
+	Toks tokset7 = <span onclick = 'show(this, "box71", "hide71")' style = 'background:pink'>-</span>{<div id = 'hide71' style = 'display:none'>...}</div><div id = 'box71' style = 'display:node'> "/* Test7 */", "template", "&lt;", "typename", "C", "&gt;", "class", "A", "<span onclick = 'show(this, "box72", "hide72")' style = 'background:pink'>-</span>{<div id = 'hide72' style = 'display:none'>...}</div><div id = 'box72' style = 'display:node'>" }</div>;
+
+	Scanner::SemiExp se;
+
+	load(tokset0, se);
+	test(se);
+	load(tokset1, se);
+	test(se);
+	load(tokset2, se);
+	test(se);
+	load(tokset3, se);
+	test(se);
+	load(tokset4, se);
+	test(se);
+	load(tokset5, se);
+	test(se);
+	load(tokset6, se);
+	test(se);
+	load(tokset7, se);
+	test(se);
+
+}</div>
+#endif
+
+
+
+<a href = "index.html">Back To Index Page</a>
+</pre></html>

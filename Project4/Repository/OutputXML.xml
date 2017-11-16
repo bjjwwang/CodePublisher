@@ -1,0 +1,103 @@
+
+<Dependency>
+  <Package id="0" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\b.cpp">
+  </Package>
+  <Package id="1" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\b.cpp">
+  </Package>
+  <Package id="2" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\GrammarHelpers.cpp">
+    <Adjacent targetId="4" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\GrammarHelpers.h">
+    </Adjacent>
+    <Adjacent targetId="3" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\Logger.h">
+    </Adjacent>
+  </Package>
+  <Package id="3" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\Logger.h">
+  </Package>
+  <Package id="4" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\GrammarHelpers.h">
+  </Package>
+  <Package id="5" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\ConfigureParser.h">
+  </Package>
+  <Package id="6" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\d.cpp">
+  </Package>
+  <Package id="7" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\d.cpp">
+  </Package>
+  <Package id="8" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\a.h">
+    <Adjacent targetId="0" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\b.cpp">
+    </Adjacent>
+    <Adjacent targetId="9" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\a.cpp">
+    </Adjacent>
+    <Adjacent targetId="1" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\b.cpp">
+    </Adjacent>
+  </Package>
+  <Package id="9" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\a.cpp">
+    <Adjacent targetId="8" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\a.h">
+    </Adjacent>
+  </Package>
+  <Package id="10" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\ConfigureParser.cpp">
+    <Adjacent targetId="5" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\ConfigureParser.h">
+    </Adjacent>
+  </Package>
+  <Package id="11" value="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\TestTA.cpp">
+    <Adjacent targetId="2" edge="C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\GrammarHelpers.cpp">
+    </Adjacent>
+  </Package>
+</Dependency>
+<StrongComponents>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\b.cpp
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\b.cpp
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\GrammarHelpers.h
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\Logger.h
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\GrammarHelpers.cpp
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\ConfigureParser.h
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\d.cpp
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\d.cpp
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\a.cpp
+    </Path>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\a.h
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Demo_Category\ConfigureParser.cpp
+    </Path>
+  </Component>
+  <Component>
+    <Path>
+      C:\Users\wangj\Desktop\Project4-2.0\Project4\Repository\Test5\TestTA.cpp
+    </Path>
+  </Component>
+</StrongComponents>
